@@ -497,15 +497,6 @@ function buildResult(row) {
   const wLTidak  = fmtDur(wLDone);
   const wStatus  = get(row, C.W_STATUS);
 
-  /* ── BukuSimpan ── */
-  const bsVLolos = get(row, C.BS_VIDEO_LOLOS);
-  const bsVDone  = parseInt(get(row, C.BS_VIDEO_DONE)) || 0;
-  const bsVTidak = Math.max(0, bsVDone - (parseInt(bsVLolos) || 0));
-  const bsLLolos = fmtDur(get(row, C.BS_LIVE_LOLOS));
-  const bsLDone  = get(row, C.BS_LIVE_DONE);
-  const bsLTidak = fmtDur(bsLDone);
-  const bsStatus = get(row, C.BS_STATUS);
-
   /* ── ShopeeVIDEO ── */
   const svTarget = get(row, C.SV_TARGET);
   const svDone   = get(row, C.SV_DONE);
