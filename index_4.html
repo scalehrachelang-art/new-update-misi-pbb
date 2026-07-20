@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Misi — PBB Bukuagen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --biru:      #0B2D6E;
+  --biru-mid:  #1A4BA8;
+  --biru-soft: #E8F0FB;
+  --kuning:    #FAC400;
+  --kuning-bg: rgba(250,196,0,0.10);
+  --kuning-bd: rgba(250,196,0,0.25);
+  --bg:        #F4F6FB;
+  --card:      #FFFFFF;
+  --border:    #E2E8F4;
+  --muted:     #8898B8;
+  --text:      #0F1C3F;
+  --text2:     #3D5080;
+  --success:   #0E9E6B;
+  --success-bg:#E6F7F2;
+  --danger:    #E04040;
+  --danger-bg: #FEF0F0;
+  --warn:      #D97706;
+  --warn-bg:   #FEF3E2;
+  --radius:    12px;
+  --radius-sm: 8px;
+}
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* LOADING */
+#loading {
+  position: fixed; inset: 0;
+  background: var(--biru);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; z-index: 200;
+  transition: opacity 0.4s;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(250,196,0,0.2);
+  border-top-color: var(--kuning);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading p { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+/* TOP BAR */
+.topbar {
+  background: var(--biru);
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-logo {
+  width: 32px; height: 32px;
+  background: var(--kuning);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: var(--biru);
+}
+.topbar-name { font-size: 14px; font-weight: 700; color: white; }
+.topbar-month {
+  font-size: 12px; font-weight: 600;
+  color: var(--kuning);
+  background: rgba(250,196,0,0.12);
+  border: 1px solid rgba(250,196,0,0.2);
+  padding: 4px 12px; border-radius: 20px;
+}
+
+/* HERO */
+.hero {
+  background: var(--biru);
+  padding: 2.5rem 1.5rem 3.5rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 28px; background: var(--bg);
+  border-radius: 28px 28px 0 0;
+}
+.hero h1 {
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-weight: 800; color: white;
+  margin-bottom: 0.4rem; line-height: 1.2;
+}
+.hero h1 span { color: var(--kuning); }
+.hero-sub { font-size: 0.88rem; color: rgba(255,255,255,0.5); margin-bottom: 1.75rem; }
+
+.search-wrap { max-width: 420px; margin: 0 auto; position: relative; }
+.search-input {
+  width: 100%;
+  padding: 14px 52px 14px 18px;
+  border-radius: 50px;
+  border: 2px solid transparent;
+  background: white;
+  font-size: 14px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--biru);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input::placeholder {
+  color: var(--muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 400; letter-spacing: 0; text-transform: none;
+}
+.search-input:focus { border-color: var(--kuning); }
+.search-btn {
+  position: absolute; right: 6px; top: 50%;
+  transform: translateY(-50%);
+  width: 38px; height: 38px;
+  background: var(--kuning);
+  border: none; border-radius: 50%;
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: opacity 0.15s;
+}
+.search-btn:hover { opacity: 0.85; }
+.search-btn svg { width: 17px; height: 17px; stroke: var(--biru); stroke-width: 2.5; fill: none; }
+
+/* MAIN */
+.main { max-width: 680px; margin: 0 auto; padding: 1.25rem 1.25rem 4rem; }
+
+/* STATES */
+.state-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 3rem 2rem; text-align: center;
+}
+.state-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.state-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+.state-sub { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+/* PROFILE CARD */
+.profile-card {
+  background: var(--biru);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 14px;
+}
+.profile-avatar {
+  width: 56px; height: 56px;
+  background: var(--kuning);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  font-size: 16px; font-weight: 800; color: var(--biru);
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+/* TOP Influencer avatar variant */
+.profile-avatar.is-top {
+  background: var(--kuning);
+  border: 2px solid rgba(255,255,255,0.3);
+}
+.avatar-top-label {
+  font-size: 7px; font-weight: 800;
+  color: var(--biru); letter-spacing: 0.04em;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1; margin-bottom: 3px;
+  opacity: 0.65;
+}
+.avatar-crown {
+  font-size: 9px; line-height: 1;
+  margin-bottom: 1px;
+}
+.profile-name {
+  font-size: 1.1rem; font-weight: 800; color: white;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+.profile-tier {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 4px;
+  font-size: 11px; font-weight: 600;
+  color: var(--kuning);
+  background: rgba(250,196,0,0.12);
+  border: 1px solid rgba(250,196,0,0.2);
+  padding: 2px 10px; border-radius: 20px;
+}
+
+/* SUMMARY ROW */
+.summary-row {
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px; margin-bottom: 1rem;
+}
+.summary-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.9rem 1rem;
+}
+.summary-num { font-size: 1.5rem; font-weight: 800; color: var(--biru); line-height: 1; margin-bottom: 3px; }
+.summary-lbl { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* SECTION HEADER */
+.section-hd {
+  display: flex; align-items: center; gap: 8px;
+  margin: 1.5rem 0 0.75rem;
+}
+.section-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--biru-mid); flex-shrink: 0;
+}
+.section-title {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* MISI CARD */
+.misi-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+  margin-bottom: 10px;
+}
+.misi-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 10px;
+  margin-bottom: 0.9rem;
+}
+.misi-title { font-size: 0.925rem; font-weight: 700; color: var(--text); }
+.misi-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 11px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.badge-selesai { background: var(--success-bg); color: var(--success); }
+.badge-belum   { background: var(--danger-bg); color: var(--danger); }
+.badge-warning { background: var(--warn-bg); color: var(--warn); }
+
+/* MISI STAT GRID */
+.misi-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.misi-stat {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+/* "Lolos" label — biru, bold, agak besar */
+.stat-lolos-lbl {
+  font-size: 13px; font-weight: 700; color: var(--biru);
+  margin-bottom: 3px;
+}
+/* Angka lolos — besar */
+.stat-lolos-val {
+  font-size: 1.4rem; font-weight: 800; color: var(--biru);
+  font-family: 'JetBrains Mono', monospace; line-height: 1;
+  margin-bottom: 5px;
+}
+/* "Tidak lolos" — kecil, muted */
+.stat-tidak-lbl {
+  font-size: 11px; color: var(--muted); font-weight: 500;
+}
+.stat-tidak-val {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+}
+
+/* FLASH SALE — summary 2-col, label bold biru, angka besar bold */
+.flash-summary {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
+}
+.flash-stat {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+.flash-stat-lbl {
+  font-size: 14px; font-weight: 700; color: var(--biru);
+  margin-bottom: 5px;
+}
+.flash-stat-val {
+  font-size: 1.6rem; font-weight: 800; color: var(--biru);
+  font-family: 'JetBrains Mono', monospace; line-height: 1;
+}
+
+/* PLATFORM PILLS */
+.platform-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 4px;
+}
+.platform-pill {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 11px; font-weight: 600; color: var(--text2);
+}
+.platform-pill.has-video {
+  border-color: var(--biru-mid); color: var(--biru-mid);
+  background: var(--biru-soft);
+}
+.platform-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+/* DEADLINE BANNER */
+.deadline-banner {
+  background: var(--kuning-bg); border: 1px solid var(--kuning-bd);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 1.25rem;
+}
+.deadline-lbl { font-size: 12px; color: var(--warn); font-weight: 600; }
+.deadline-date {
+  font-size: 12px; font-weight: 800; color: var(--biru);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* TOP INFLUENCER BANNER */
+.ti-banner {
+  background: var(--biru);
+  border-radius: var(--radius); padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.ti-crown { font-size: 16px; }
+.ti-label { font-size: 12px; font-weight: 700; color: var(--kuning); letter-spacing: 0.05em; }
+
+/* PANEN EMAS / LASKAR AGEN — single stat centered */
+.single-stat {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 14px; display: flex; align-items: center; gap: 14px;
+}
+.single-stat-val {
+  font-size: 1.4rem; font-weight: 800; color: var(--biru);
+  font-family: 'JetBrains Mono', monospace;
+}
+.single-stat-lbl { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* RESPONSIVE */
+@media(max-width:480px) {
+  .misi-grid { grid-template-columns: 1fr; }
+  .flash-summary { grid-template-columns: 1fr; }
+  .summary-row { grid-template-columns: 1fr 1fr; }
+  .topbar { padding: 0 1rem; }
+  .hero { padding: 2rem 1rem 3rem; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Memuat data misi...</p>
+</div>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">PBB</div>
+    <span class="topbar-name">Komunitas Bukuagen</span>
+  </div>
+  <div class="topbar-month">Juli 2026</div>
+</div>
+
+<div class="hero">
+  <h1>Cek progress<br><span>misi kamu</span></h1>
+  <p class="hero-sub">Ketik kode anggota PBB kamu untuk lihat update misi</p>
+  <div class="search-wrap">
+    <input class="search-input" id="search-input" type="text"
+      placeholder="Contoh: AKSALPBB" maxlength="30"
+      autocomplete="off" autocorrect="off" spellcheck="false" />
+    <button class="search-btn" onclick="doSearch()" aria-label="Cari">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="state-box" id="state-default">
+    <div class="state-icon">👆</div>
+    <div class="state-title">Masukkan kode anggota kamu</div>
+    <div class="state-sub">Ketik kode PBB kamu di kolom pencarian di atas,<br>lalu tekan Enter atau klik tombol cari.</div>
+  </div>
+  <div class="state-box" id="state-notfound" style="display:none">
+    <div class="state-icon">🔍</div>
+    <div class="state-title">Kode tidak ditemukan</div>
+    <div class="state-sub">Pastikan kode anggota yang kamu masukkan sudah benar.<br>Jika masalah berlanjut, hubungi tim KOL.</div>
+  </div>
+  <div id="result" style="display:none"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   KONFIGURASI — ganti 2 baris ini saja
+═══════════════════════════════════════ */
+const SHEET_ID = 'GANTI_DENGAN_SHEET_ID_KAMU';
+const API_KEY  = 'GANTI_DENGAN_API_KEY_KAMU';
+/* ═══════════════════════════════════════ */
+
+const SHEET_NAME  = 'Update Misi Juli 2026';
+const SHEET_RANGE = `'${SHEET_NAME}'!A1:AQ250`;
+let allRows = [];
+
+async function loadSheet() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_RANGE)}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  return json.values || [];
+}
+
+const C = {
+  NO:0, KODE:1, TIER:2,
+  W_VIDEO_DONE:3,  W_VIDEO_LOLOS:4,
+  W_LIVE_DONE:5,   W_LIVE_LOLOS:6,   W_STATUS:7,
+  SP_VIDEO_DONE:8, SP_VIDEO_LOLOS:9,
+  SP_LIVE_DONE:10, SP_LIVE_LOLOS:11, SP_STATUS:12,
+  BS_VIDEO_DONE:13,BS_VIDEO_LOLOS:14,
+  BS_LIVE_DONE:15, BS_LIVE_LOLOS:16, BS_STATUS:17,
+  SV_TARGET:18, SV_DONE:19, SV_STATUS:20,
+  SL_DONE:21, SL_LOLOS:22, SL_STATUS:23,
+  TI_SVIDEO:24, TI_SLIVE:25,
+  FS_TIKTOK:26, FS_IG:27, FS_SHOPEE:28,
+  FS_YT:29, FS_FB:30, FS_TOTAL:31,
+  FS_LIVE_DONE:32, FS_STATUS:33,
+  PE_TARGET:34, PE_DONE:35, PE_STATUS:36,
+  LA_TARGET:37, LA_DONE:38, LA_STATUS:39,
+};
+
+function get(row, col) { return (row[col] || '').toString().trim(); }
+
+function fmtDur(str) {
+  if (!str || str === '0:00:00' || str === '00:00:00') return '0 jam';
+  const p = str.split(':');
+  const h = parseInt(p[0]) || 0, m = parseInt(p[1]) || 0;
+  if (h === 0 && m === 0) return '0 jam';
+  return m === 0 ? `${h} jam` : `${h} jam ${m} mnt`;
+}
+
+function badge(status) {
+  if (status === 'SUDAH SELESAI') return `<span class="badge badge-selesai">✓ Selesai</span>`;
+  if (status === 'BELUM SELESAI') return `<span class="badge badge-belum">Belum selesai</span>`;
+  return `<span class="badge badge-warning">${status || '–'}</span>`;
+}
+
+/* Stat block: label "Lolos" bold biru di atas, angka besar, "Tidak lolos: X" kecil di bawah */
+function statNum(lolosVal, tidakVal, lolosLbl) {
+  return `<div class="misi-stat">
+    <div class="stat-lolos-lbl">${lolosLbl}</div>
+    <div class="stat-lolos-val">${lolosVal || '0'}</div>
+    <div class="stat-tidak-lbl">Tidak lolos: <span class="stat-tidak-val">${tidakVal || '0'}</span></div>
+  </div>`;
+}
+function statDur(lolosVal, tidakVal, lolosLbl) {
+  return `<div class="misi-stat">
+    <div class="stat-lolos-lbl">${lolosLbl}</div>
+    <div class="stat-lolos-val">${lolosVal}</div>
+    <div class="stat-tidak-lbl">Tidak lolos: <span class="stat-tidak-val">${tidakVal}</span></div>
+  </div>`;
+}
+
+function buildResult(row) {
+  const kode = get(row, C.KODE);
+  const tier = get(row, C.TIER);
+  const isTop = tier === '3';
+
+  const initials = kode.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase() || '??';
+  const tierLabel = isTop ? 'TOP Influencer' : 'PBB Member';
+
+  /* Avatar: TOP Influencer dapat mahkota kecil + label "TOP PBB" */
+  const avatarInner = isTop
+    ? `<div class="avatar-crown">👑</div><div class="avatar-top-label">TOP PBB</div><div>${initials}</div>`
+    : `<div>${initials}</div>`;
+  const avatarClass = isTop ? 'profile-avatar is-top' : 'profile-avatar';
+
+  /* Summary counts — hitung semua misi yang relevan */
+  const baseStatuses = [C.W_STATUS, C.BS_STATUS, C.SV_STATUS, C.SL_STATUS, C.FS_STATUS, C.PE_STATUS, C.LA_STATUS];
+  const tiStatuses = isTop ? [C.TI_SVIDEO, C.TI_SLIVE] : [];
+  const allStatuses = [...baseStatuses];
+  const totalMisi = allStatuses.length;
+  const selesaiMisi = allStatuses.filter(c => get(row, c) === 'SUDAH SELESAI').length;
+
+  /* ── Misi Wajib ── */
+  const wVLolos  = get(row, C.W_VIDEO_LOLOS);
+  const wVDone   = parseInt(get(row, C.W_VIDEO_DONE)) || 0;
+  const wVTidak  = Math.max(0, wVDone - (parseInt(wVLolos) || 0));
+  const wLLolos  = fmtDur(get(row, C.W_LIVE_LOLOS));
+  const wLDone   = get(row, C.W_LIVE_DONE);
+  const wLTidak  = fmtDur(wLDone);
+  const wStatus  = get(row, C.W_STATUS);
+
+  /* ── BukuSimpan ── */
+  const bsVLolos = get(row, C.BS_VIDEO_LOLOS);
+  const bsVDone  = parseInt(get(row, C.BS_VIDEO_DONE)) || 0;
+  const bsVTidak = Math.max(0, bsVDone - (parseInt(bsVLolos) || 0));
+  const bsLLolos = fmtDur(get(row, C.BS_LIVE_LOLOS));
+  const bsLDone  = get(row, C.BS_LIVE_DONE);
+  const bsLTidak = fmtDur(bsLDone);
+  const bsStatus = get(row, C.BS_STATUS);
+
+  /* ── ShopeeVIDEO ── */
+  const svTarget = get(row, C.SV_TARGET);
+  const svDone   = get(row, C.SV_DONE);
+  const svTidak  = Math.max(0, (parseInt(svDone)||0) - (parseInt(svTarget)||0));
+  const svStatus = get(row, C.SV_STATUS);
+
+  /* ── ShopeeLIVE ── */
+  const slLolos  = fmtDur(get(row, C.SL_LOLOS));
+  const slDone   = get(row, C.SL_DONE);
+  const slTidak  = fmtDur(slDone);
+  const slStatus = get(row, C.SL_STATUS);
+
+  /* ── Top Influencer Misi Khusus ── */
+  const tiSVideo = get(row, C.TI_SVIDEO);
+  const tiSLive  = fmtDur(get(row, C.TI_SLIVE));
+
+  /* ── Flash Sale ── */
+  const fsTiktok = get(row, C.FS_TIKTOK);
+  const fsIG     = get(row, C.FS_IG);
+  const fsShopee = get(row, C.FS_SHOPEE);
+  const fsYT     = get(row, C.FS_YT);
+  const fsFB     = get(row, C.FS_FB);
+  const fsTotal  = get(row, C.FS_TOTAL);
+  const fsLive   = fmtDur(get(row, C.FS_LIVE_DONE));
+  const fsStatus = get(row, C.FS_STATUS);
+
+  /* ── Panen Emas ── */
+  const peDone   = get(row, C.PE_DONE);
+  const peStatus = get(row, C.PE_STATUS);
+
+  /* ── Laskar Agen ── */
+  const laDone   = get(row, C.LA_DONE);
+  const laStatus = get(row, C.LA_STATUS);
+
+  function pill(label, val) {
+    const n = parseInt(val) || 0;
+    return `<div class="platform-pill ${n>0?'has-video':''}"><span class="platform-num">${n}</span> ${label}</div>`;
+  }
+
+  /* TOP Influencer misi khusus block */
+  const tiBlock = isTop ? `
+    <div class="section-hd"><div class="section-dot" style="background:var(--kuning)"></div><span class="section-title" style="color:var(--biru)">Misi Khusus Top Influencer</span></div>
+    <div class="ti-banner"><span class="ti-crown">👑</span><span class="ti-label">Eksklusif untuk TOP Influencer</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">Misi Khusus ShopeeVIDEO</div>
+          <div class="misi-subtitle">Eksklusif Top Influencer</div>
+        </div>
+        ${(parseInt(tiSVideo)||0) > 0 ? `<span class="badge badge-selesai">✓ Ada</span>` : `<span class="badge badge-belum">Belum</span>`}
+      </div>
+      <div class="misi-grid">
+        ${statNum(tiSVideo, '–', 'Video')}
+        <div class="misi-stat">
+          <div class="stat-lolos-lbl">Status</div>
+          <div class="stat-lolos-val" style="font-size:1rem">${(parseInt(tiSVideo)||0) > 0 ? '✓' : '–'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">Misi Khusus ShopeeLIVE</div>
+          <div class="misi-subtitle">Eksklusif Top Influencer</div>
+        </div>
+        ${tiSLive !== '0 jam' ? `<span class="badge badge-selesai">✓ Ada</span>` : `<span class="badge badge-belum">Belum</span>`}
+      </div>
+      <div class="misi-grid">
+        ${statDur(tiSLive, '–', 'Durasi Live')}
+        <div class="misi-stat">
+          <div class="stat-lolos-lbl">Status</div>
+          <div class="stat-lolos-val" style="font-size:1rem">${tiSLive !== '0 jam' ? '✓' : '–'}</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="profile-card">
+      <div class="${avatarClass}">${avatarInner}</div>
+      <div>
+        <div class="profile-name">${kode}</div>
+        <div class="profile-tier">${tierLabel}</div>
+      </div>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-num">${selesaiMisi}</div>
+        <div class="summary-lbl">Misi selesai</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${totalMisi - selesaiMisi}</div>
+        <div class="summary-lbl">Belum selesai</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${Math.round((selesaiMisi/totalMisi)*100)}%</div>
+        <div class="summary-lbl">Progres total</div>
+      </div>
+    </div>
+
+    <!-- MISI WAJIB -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi Wajib</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">Video + Live Streaming</div>
+          <div class="misi-subtitle">Misi utama bulan ini</div>
+        </div>
+        ${badge(wStatus)}
+      </div>
+      <div class="misi-grid">
+        ${statNum(wVLolos, wVTidak, 'Lolos')}
+        ${statDur(wLLolos, wLTidak, 'Live Lolos')}
+      </div>
+    </div>
+
+    <!-- MISI SPESIAL BUKUSIMPAN -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi Spesial</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">Misi Spesial BukuSimpan</div>
+          <div class="misi-subtitle">Video & Live Streaming BukuSimpan</div>
+        </div>
+        ${badge(bsStatus)}
+      </div>
+      <div class="misi-grid">
+        ${statNum(bsVLolos, bsVTidak, 'Lolos')}
+        ${statDur(bsLLolos, bsLTidak, 'Live Lolos')}
+      </div>
+    </div>
+
+    <!-- SHOPEEVIDEO -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi ShopeeVIDEO</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">ShopeeVIDEO Juli 2026</div>
+          <div class="misi-subtitle">Target: ${svTarget || '–'} video</div>
+        </div>
+        ${badge(svStatus)}
+      </div>
+      <div class="misi-grid">
+        ${statNum(svDone, svTidak, 'Lolos')}
+        <div class="misi-stat">
+          <div class="stat-lolos-lbl">Target</div>
+          <div class="stat-lolos-val">${svTarget || '–'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOPEELIVE -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi ShopeeLIVE</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">ShopeeLIVE Juli 2026</div>
+          <div class="misi-subtitle">Durasi Live Streaming</div>
+        </div>
+        ${badge(slStatus)}
+      </div>
+      <div class="misi-grid">
+        ${statDur(slLolos, slTidak, 'Lolos')}
+        <div class="misi-stat">
+          <div class="stat-lolos-lbl">Total Live</div>
+          <div class="stat-lolos-val">${fmtDur(slDone)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP INFLUENCER MISI KHUSUS (tier 3 only) -->
+    ${tiBlock}
+
+    <!-- FLASH SALE -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi Flash Sale</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div>
+          <div class="misi-title">Flash Sale Juli 2026</div>
+          <div class="misi-subtitle">Video per platform + Live Streaming</div>
+        </div>
+        ${badge(fsStatus)}
+      </div>
+      <div class="flash-summary">
+        <div class="flash-stat">
+          <div class="flash-stat-lbl">Total Video</div>
+          <div class="flash-stat-val">${fsTotal || '0'}</div>
+        </div>
+        <div class="flash-stat">
+          <div class="flash-stat-lbl">Live Streaming</div>
+          <div class="flash-stat-val">${fsLive}</div>
+        </div>
+      </div>
+      <div class="platform-row">
+        ${pill('TikTok', fsTiktok)}
+        ${pill('Instagram', fsIG)}
+        ${pill('Shopee', fsShopee)}
+        ${pill('YouTube', fsYT)}
+        ${pill('Facebook', fsFB)}
+      </div>
+    </div>
+
+    <!-- PANEN EMAS -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi Panen Emas</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div><div class="misi-title">Panen Emas 7.7 Juli 2026</div></div>
+        ${badge(peStatus)}
+      </div>
+      <div class="single-stat">
+        <div class="single-stat-val">${peDone || '0'}</div>
+        <div class="single-stat-lbl">Video dikirim</div>
+      </div>
+    </div>
+
+    <!-- LASKAR AGEN -->
+    <div class="section-hd"><div class="section-dot"></div><span class="section-title">Misi Laskar Agen</span></div>
+    <div class="misi-card">
+      <div class="misi-top">
+        <div><div class="misi-title">Laskar Agen Juara</div></div>
+        ${badge(laStatus)}
+      </div>
+      <div class="single-stat">
+        <div class="single-stat-val">${laDone || '0'}</div>
+        <div class="single-stat-lbl">Video dikirim</div>
+      </div>
+    </div>
+
+    <div class="deadline-banner">
+      <span class="deadline-lbl">⏰ Deadline misi bulan ini</span>
+      <span class="deadline-date">31 Juli 2026</span>
+    </div>
+  `;
+}
+
+function doSearch() {
+  const q = document.getElementById('search-input').value.trim().toUpperCase();
+  if (!q) return;
+  document.getElementById('state-default').style.display  = 'none';
+  document.getElementById('state-notfound').style.display = 'none';
+  document.getElementById('result').style.display         = 'none';
+  const found = allRows.find(r => (r[C.KODE]||'').toString().trim().toUpperCase() === q);
+  if (!found) { document.getElementById('state-notfound').style.display = 'block'; return; }
+  document.getElementById('result').innerHTML = buildResult(found);
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+async function init() {
+  try {
+    const raw = await loadSheet();
+    allRows = raw.slice(4).filter(r => r && r[1]);
+    document.getElementById('loading').style.opacity = '0';
+    setTimeout(() => document.getElementById('loading').style.display = 'none', 400);
+  } catch(err) {
+    document.getElementById('loading').innerHTML =
+      `<div style="text-align:center;padding:2rem;color:white">
+        <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
+        <div style="font-weight:700;margin-bottom:.5rem">Gagal memuat data</div>
+        <div style="font-size:13px;opacity:.6">${err.message}</div>
+      </div>`;
+  }
+}
+
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+init();
+</script>
+</body>
+</html>
